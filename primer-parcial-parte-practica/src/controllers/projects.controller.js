@@ -9,9 +9,27 @@ import {
 export const createProject = async (req, res) => {
   try {
     // TODO: 1. Crear el project con los datos del body que ya pasaron la validación.
+    const { technologies, ...projectData } = req.body;
     // ? Revisar de dónde debe salir el leader del proyecto.
+    const leaderId = req.user.id;
     // TODO: 2. Asociar al project las technologies recibidas.
+    if (technologies && technologies.length > 0) {
+      await project.setTechnologies(technologies);
+    }
     // TODO: 3. Responder con código 201 y el project con sus technologies y su leader.
+    const projectWithDetails = await ProjectModel.findByPk(project.id, {
+      include: [
+        {
+          model: UserModel,
+          as: "leader",
+          attributes: { exclude: ["password"] },
+        },
+        {
+          model: TechnologyModel,
+          as: "technologies",
+        },
+      ],
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ msg: "Error interno del servidor" });
